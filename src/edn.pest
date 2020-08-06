@@ -1,0 +1,46 @@
+nil = @{"nil"}
+boolean = @{ "true" | "false" }
+tag = @{"#" ~ symbol }
+number = @{
+            "-"?
+            ~ ("0" | ASCII_NONZERO_DIGIT ~ ASCII_DIGIT*)
+            ~ ("." ~ ASCII_DIGIT*)?
+            ~ (^"e" ~ ("+" | "-")? ~ ASCII_DIGIT+)?
+        }
+name = @{ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "-" | "." | "*" | "+" |"!" | "-" | "_" | "?" | "$" | "%" | "&" | "=" | "<" | ">")*}
+symbol = { name ~ ("/" ~ name)?}
+keyword = {":" ~ symbol}
+string = ${ "\"" ~ inner ~ "\"" }
+inner = @{ char* }
+char = {
+    !("\"" | "\\") ~ ANY
+    | "\\" ~ ("\"" | "\\" | "/" | "b" | "f" | "n" | "r" | "t")
+    | "\\" ~ ("u" ~ ASCII_HEX_DIGIT{4})
+}
+
+list = {
+    "(" ~ ")" |
+    "(" ~ (","* ~ value ~ ","*)+ ~ ")"
+}
+vector = {
+    "[" ~   "]" |
+    "[" ~ (","* ~ value ~ ","*)+ ~ "]"
+}
+set = {
+    "#{" ~ "}" |
+    "#{" ~ (","* ~ value ~ ","*)+ ~ "}"
+}
+map = {
+    "{" ~ "}" |
+    "{" ~ (","*  ~ pair ~ ","*)+ ~ "}"
+    }
+
+pair = {value ~ ","? ~ value}
+tagged_value = {tag ~ value}
+value = _{ nil | boolean | keyword |  number  | map | list | vector | set | string | tagged_value}
+
+WHITESPACE = _{ " " | "\t" | "\n"}
+
+edn = _{SOI ~ value ~ EOI}
+
+
