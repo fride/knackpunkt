@@ -87,7 +87,11 @@ pub mod edn {
                         .collect::<Vec<String>>()
                         .join(" "))
                 ,
-                Value::Set(values) => "".to_owned(),
+                Value::Set(elements) =>  format!("#{{{}}}", elements
+                    .iter()
+                    .map(|a| a.to_string())
+                    .collect::<Vec<String>>()
+                    .join(" ")),
                 Value::Map(map) => {
                     let value_str = map.iter()
                         .map(|a| format!("{} {}", a.0.to_string(), a.1.to_string()))
@@ -106,7 +110,8 @@ fn main() {
 
     let str =  r###"
         { :example [{:person/name "Anna" :person/email "anna@example.com"}],
-         : query {:crux.db/id #uuid "415c45c9-7cbe-4660-801b-dab9edc60c84", :value "baz"}
+         :query {:crux.db/id #uuid "415c45c9-7cbe-4660-801b-dab9edc60c84", :value "baz"}
+         :sets #{1 2 3 4 4 4 4 4}
         }
     "###;
 
@@ -148,6 +153,13 @@ fn main() {
             },
             Rule::vector => {
                 Value::Vec(pair.into_inner()
+                    .map(|value| {
+                        parse_value(value)
+                    })
+                    .collect())
+            }
+            Rule::set => {
+                Value::Set(pair.into_inner()
                     .map(|value| {
                         parse_value(value)
                     })
